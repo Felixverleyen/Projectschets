@@ -61,10 +61,9 @@ Vec operator-(Vec a, Vec b) { return a -= b; }
 // telkens voor andere ri ar berekenen door te sommeren over elke andere rj
 Vec a(int i) {
     Vec ri= pos[0,i];
-    Vec ri= pos[0,j];
     Vec ar;
 for (int j =0; j<N, ++j){
-    Vec rj = pos[j];
+    Vec rj = pos[0,j];
     double mj= mass[j];
     double mi=mass[i];
     Vec afst= ri-rj;
