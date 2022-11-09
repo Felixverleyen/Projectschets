@@ -6,16 +6,8 @@
 #include <vector>
 #include <array>
 using namespace std;
-void print(const vector<double>& v) {
-cout << v.size() << ": ";
-for (double elem : v) cout << elem << ' ';
-cout << endl;
-};
 
-double G=8;
-double mu=0.01;
-double h=0.01;
-double N=8;
+
 class Vec{
     double _x;
     double _y;
@@ -29,7 +21,13 @@ double z() const{return _z;}
 double norm() const{return sqrt(_x*_x + _y*_y+ _z*_z);}
 double norm2() const{return _x*_x + _y*_y+ _z*_z;}
 double norm3() const{double r=sqrt(_x*_x + _y*_y+_z*_z); return r*r*r;}
-
+void print(const vector<double>& v) {
+cout << v.size() << ": ";
+for (double elem : v) cout << elem << ' ';
+cout << endl;
+};
+void print(Vec a)
+{ cout << a.x() << ' ' << a.y() << endl; }
 
 Vec& operator+=(Vec v) {
 _x += v._x;
@@ -52,8 +50,6 @@ _y /= s;
 _z /= s;
 return *this;}
 
-
-
 };
 Vec operator*(Vec a, double s) { return a *= s; }
 Vec operator*(double s, Vec b) { return b *= s; }
@@ -66,7 +62,6 @@ Vec operator-(Vec a, Vec b) { return a -= b; }
 Vec a(int i) {
     Vec ri= pos[0,i];
     Vec ri= pos[0,j];
-
     Vec ar;
 for (int j =0; j<N, ++j){
     Vec rj = pos[j];
@@ -79,8 +74,7 @@ for (int j =0; j<N, ++j){
 
  } ;
 
-void print(Vec a)
-{ cout << a.x() << ' ' << a.y() << endl; }
+
 
 
 
@@ -98,7 +92,7 @@ int main(){
 // initialiseren voor elke i (eerste stappen tot algoritme kan beginnen)
 
      
-double theta= 1.351207;
+
 for (double t = 0.00; t <= 0.1; t+=h){
     list.pushback(pos);
     for(int i=0; i<N; i++){
@@ -107,16 +101,7 @@ for (double t = 0.00; t <= 0.1; t+=h){
     Vec vn = speed[t,i];
 
 
-    rn += 1/2*h*theta*vn;
-    vn += theta*h*ar(rn);
-    rn += 1/2*h*(1-theta)*vn;
-    vn += theta*h(1-2*theta)*ar(rn);
-    rn += 1/2*h*(1-theta)*vn;
-    vn += theta*h*ar(rn);
-    rn += 1/2*h*theta*vn;
-
-    pos[t,i]= rn;
-    speed[t,i]= vn;
+    
 
 
 
