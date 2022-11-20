@@ -1,0 +1,218 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+#include <array>
+#include <string>
+using namespace std;
+
+const int inputorder=3; 
+double G=8;
+double mu=0.01;
+double h=0.01;
+int const N=4;
+class Vec{
+    double _x;
+    double _y;
+    double _z;
+public:
+Vec(){_x=0; _y=0;_z=0;}
+Vec(double x, double y, double z){_x=x; _y=y; _z=z;}
+double x() const{return _x;}
+double y() const{return _y;}
+double z() const{return _z;}
+double norm() const{return pow(_x*_x + _y*_y+ _z*_z,0.5);}
+double norm2() const{return _x*_x + _y*_y+ _z*_z;}
+double norm3() const{double r=sqrt(_x*_x + _y*_y+_z*_z); return r*r*r;}
+
+Vec& operator+=(Vec v) {
+_x += v._x;
+_y += v._y;
+_z += v._z;
+return *this;}
+Vec& operator-=(Vec v) {
+_x -= v._x;
+_y -= v._y;
+_z -= v._z;
+return *this;}
+Vec& operator*=(double s) {
+_x *= s;
+_y *= s;
+_z *= s;
+return *this;}
+Vec& operator/=(double s) {
+_x /= s;
+_y /= s;
+_z /= s;
+return *this;}
+
+
+};
+Vec operator*(Vec a, double s) { return a *= s; }
+Vec operator*(double s, Vec b) { return b *= s; }
+Vec operator/(Vec a, double s) { return a /= s; }
+
+Vec operator+(Vec a, Vec b) {return a+=b;}
+Vec operator-(Vec a, Vec b) { return a -= b; }
+
+
+    array<Vec,N> pos0 = {Vec(3,2,1),Vec(2,1,-1),Vec(2,1,3),Vec(-2,2,1)};
+    array<Vec,N> pos1 = {Vec(3,2,1),Vec(2,1,-1),Vec(2,1,3),Vec(-2,2,1)};
+    array<Vec,N> pos2 = {Vec(3,2,1),Vec(2,1,-1),Vec(2,1,3),Vec(-2,2,1)};
+    array<Vec,N> pos3 = {Vec(3,2,1),Vec(2,1,-1),Vec(2,1,3),Vec(-2,2,1)};
+    array<Vec,N> pos4 = {Vec(3,2,1),Vec(2,1,-1),Vec(2,1,3),Vec(-2,2,1)};
+    array<double,N> mass = {4
+    ,4,5,2};
+    array<Vec,N> speed0 = {Vec(-2,3,2),Vec(1,-1,2),Vec(-2,1,2),Vec(0,1,1)}; 
+    array<Vec,N> speed1 = {Vec(-2,3,2),Vec(1,-1,2),Vec(-2,1,2),Vec(0,1,1)}; 
+    array<Vec,N> speed2 = {Vec(-2,3,2),Vec(1,-1,2),Vec(-2,1,2),Vec(0,1,1)}; 
+    array<Vec,N> speed3 = {Vec(-2,3,2),Vec(1,-1,2),Vec(-2,1,2),Vec(0,1,1)};
+    array<Vec,N> speed4= {Vec(-2,3,2),Vec(1,-1,2),Vec(-2,1,2),Vec(0,1,1)};  
+    array<Vec,N> nspeed = {};
+    
+  
+void print(Vec a)
+{ cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
+
+array<Vec,N> index(int n){
+    array<Vec,N> pos={};
+    if(n=0){
+      return pos0;
+    }
+    if(n=1){
+       return pos1;
+    }
+    if(n=2){
+        return pos2;
+    }
+    if(n=3){
+        return pos3;}}
+
+Vec a(int n ,int i) {
+    array<Vec,N> pos= index(n);
+    Vec ri= pos[i];
+    Vec ar={0,0,0};
+for (int j =0; j<N; ++j){
+    Vec rj = pos[j];
+    double mj= mass[j];
+    double mi=mass[i];
+    Vec afst= ri-rj;
+ if (i!=j){
+    ar-= G*mj*afst/afst.norm3();
+ } 
+}
+return ar;}
+    
+double E(){
+    double E=0;
+    for (int i=0; i<N;++i){
+        Vec ri = pos0[i];
+        double mi=mass[i];
+        Vec vi= speed0[i];
+        E+=mi*vi.norm2()*0.5;
+        for  (int j =0; j<N; ++j){
+            Vec rj = pos0[j];
+            double mj= mass[j];
+            Vec afst= ri-rj;
+            if (i!=j){
+             E-= 1/2*G*mi*mj/afst.norm();
+                }
+    }} return E;}
+
+
+
+int main(){
+     ofstream outfile("projectpos.txt");
+    outfile << setprecision(8);
+    ofstream outfile2("projectspeed.txt");
+    outfile2 << setprecision(8);
+    ofstream outfile3("projectenergy.txt");
+    outfile2 << setprecision(8);
+    int count=0;
+    ofstream time("projecttime.txt");
+    time << setprecision(8);
+    
+    for(int i=0; i<N; i++){
+        outfile << pos0[i].x() << ' ' <<pos0[i].y()<<' '<< pos0[i].z()<<' ';
+         outfile2 << speed0[i].x() << ' ' <<speed0[i].y()<<' '<< speed0[i].z()<<' ';
+        pos1[i]=pos0[i]+h*speed0[i];
+        speed1[i]= speed0[i]+h*a(0,i);}outfile  << '\n';
+    outfile2 << '\n';
+    if (inputorder>1){for(int i=0; i<N; i++){
+        
+         outfile << pos1[i].x() << ' ' <<pos1[i].y()<<' '<< pos1[i].z()<<' ';
+         outfile2 << speed1[i].x() << ' ' <<speed1[i].y()<<' '<< speed1[i].z()<<' ';
+    }outfile <<'\n'; outfile2 << '\n';}
+    for(int i=0; i<N; i++){
+        pos2[i]= pos1[i] +h*(3./2.*speed1[i]-0.5*speed0[i]);
+        speed2[i]= speed1[i] +h*(3./2.*a(1,i)-0.5*a(0,i));}
+        if (inputorder>2){for(int i=0; i<N; i++){
+         outfile << pos2[i].x() << ' ' <<pos2[i].y()<<' '<< pos2[i].z()<<' ';
+         outfile2 << speed2[i].x() << ' ' <<speed2[i].y()<<' '<< speed2[i].z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+    
+    for(int i=0; i<N; i++){
+        pos3[i]=pos2[i]+h/12.*(23*speed2[i]-16*speed1[i]+5*speed0[i]);
+        speed3[i]=speed2[i]+h/12.*(23*a(2,i)-16*a(1,i)+5*a(0,i));}
+        if (inputorder>2){for(int i=0; i<N; i++){
+         outfile << pos3[i].x() << ' ' <<pos3[i].y()<<' '<< pos3[i].z()<<' ';
+         outfile2 << speed3[i].x() << ' ' <<speed3[i].y()<<' '<< speed3[i].z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+    for(int i=0; i<N; i++){
+        pos4[i]=pos3[i] +h/24.*(55*speed3[i]-59*speed2[i]+37*speed1[i]-9*speed0[i]);
+        speed4[i]=speed3[i] +h/24.*(55*a(3,i)-59*a(2,i)+37*a(1,i)-9*a(0,i));}
+        if (inputorder>3){for(int i=0; i<N; i++){
+         outfile << pos4[i].x() << ' ' <<pos4[i].y()<<' '<< pos4[i].z()<<' ';
+         outfile2 << speed4[i].x() << ' ' <<speed4[i].y()<<' '<< speed4[i].z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+    
+
+    for (double t = 0.00; t <=0.15; t+=h){
+    
+    pos0=pos1;
+    pos1=pos2;
+    pos2=pos3;
+    pos3=pos4;
+    speed0=speed1;
+    speed1=speed2;
+    speed2=speed3;
+    speed3=speed4;
+    time << t << '\n';
+    outfile3 << E() << '\n';
+
+    for(int i=0; i<N; i++){
+    if(inputorder==1){
+        pos1[i]=pos0[i]+h*speed0[i];
+        print(pos1[i]);
+        speed1[i]= speed0[i]+h*a(0,i);
+         outfile << pos1[i].x() << ' ' <<pos1[i].y()<<' '<< pos1[i].z()<<' ';
+         outfile2 << speed1[i].x() << ' ' <<speed1[i].y()<<' '<< speed1[i].z()<<' ';
+        }
+    if (inputorder==2){
+         pos2[i]= pos1[i] +h*(3./2.*speed1[i]-0.5*speed0[i]);
+        speed2[i]= speed1[i] +h*(3./2.*a(1,i)-0.5*a(0,i));
+         outfile << pos2[i].x() << ' ' <<pos2[i].y()<<' '<< pos2[i].z()<<' ';
+         outfile2 << speed2[i].x() << ' ' <<speed2[i].y()<<' '<< speed2[i].z()<<' ';}
+    if (inputorder==3){
+         pos3[i]=pos2[i]+h/12.*(23*speed2[i]-16*speed1[i]+5*speed0[i]);
+        speed3[i]=speed2[i]+h/12.*(23*a(2,i)-16*a(1,i)+5*a(0,i));
+         outfile << pos3[i].x() << ' ' <<pos3[i].y()<<' '<< pos3[i].z()<<' ';
+         outfile2 << speed3[i].x() << ' ' <<speed3[i].y()<<' '<< speed3[i].z()<<' ';}
+    if (inputorder==4){
+         pos4[i]=pos3[i] +h/24.*(55*speed3[i]-59*speed2[i]+37*speed1[i]-9*speed0[i]);
+         speed4[i]=speed3[i] +h/24.*(55*a(3,i)-59*a(2,i)+37*a(1,i)-9*a(0,i));
+         outfile << pos4[i].x() << ' ' <<pos4[i].y()<<' '<< pos4[i].z()<<' ';
+         outfile2 << speed4[i].x() << ' ' <<speed4[i].y()<<' '<< speed4[i].z()<<' ';}     
+    
+    
+    }
+    outfile  << '\n';
+    outfile2 << '\n';
+    
+
+    }
+
+    }
+
+
+       
+    
