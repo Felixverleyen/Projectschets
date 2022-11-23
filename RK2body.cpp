@@ -1,5 +1,6 @@
 //runge-kutta-4 integrator
 #define _USE_MATH_DEFINES
+#include "3Vec.hpp"
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -25,64 +26,7 @@ Vec a(int i) {
         }
     return ar;}
 
-class Vec{
-    double _x;
-    double _y;
-    double _z;
 
-public:
-
-Vec(){_x=0; _y=0;_z=0;}
-Vec(double x, double y, double z){_x=x; _y=y; _z=z;}
-
-double x() const{return _x;}
-double y() const{return _y;}
-double z() const{return _z;}
-
-double norm() const{return pow(_x*_x + _y*_y+ _z*_z, 0.5);}
-double norm2() const{return _x*_x + _y*_y+ _z*_z;}
-double norm3() const{double r=pow(_x*_x + _y*_y+_z*_z, 0.5); return r*r*r;}
-
-void print(const vector<double>& v) {
-cout << v.size() << ": ";
-for (double elem : v) cout << elem << ' ';
-cout << endl;
-};
-void print(Vec a)
-{ cout << a.x() << ' ' << a.y() << endl; }
-
-Vec& operator+=(Vec v) {
-_x += v._x;
-_y += v._y;
-_z += v._z;
-return *this;}
-
-Vec& operator-=(Vec v) {
-_x -= v._x;
-_y -= v._y;
-_z -= v._z;
-return *this;}
-
-Vec& operator*=(double s) {
-_x *= s;
-_y *= s;
-_z *= s;
-return *this;}
-
-Vec& operator/=(double s) {
-_x /= s;
-_y /= s;
-_z /= s;
-return *this;}
-
-};
-
-Vec operator*(Vec a, double s) { return a *= s; }
-Vec operator*(double s, Vec b) { return b *= s; }
-Vec operator/(Vec a, double s) { return a /= s; }
-
-Vec operator+(Vec a, Vec b) {return a+=b;}
-Vec operator-(Vec a, Vec b) { return a -= b; }
 
 Vec a(Vec r, double m){
     return -1 * m * (r / r.norm3());
