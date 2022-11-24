@@ -67,11 +67,12 @@ class nbody{
 
     public:
 
+    void set_N(int n) {N=n;};
     int bodies() const{return N;};
 
     //deze methods geven de waarde van een element in de lijst
     double m(int l) const{return _mass[l];};
-    Vec p(int w) const{return _pos[w];};
+    Vec r(int w) const{return _pos[w];};
     Vec v(int q) const{return _vel[q];};
 
     // methods om de lijsten op te vullen:
@@ -92,11 +93,12 @@ class nbody{
         _mass[k] = m;
     }
 
-    void swap_p(int h, Vec r){
+    void swap_r(int h, Vec r){
         _pos[h] = r;
     }
 
     void swap_v(int f, Vec v){
         _vel[f] = v;
     }
+
 };
