@@ -67,6 +67,7 @@ class nbody{
 
     public:
 
+    void set_N(int n) {N=n;};
     int bodies() const{return N;};
 
     //deze methods geven de waarde van een element in de lijst

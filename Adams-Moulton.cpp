@@ -57,20 +57,18 @@ void AM(double h, double time, nbody sim){
     outfile << setprecision(15);
     int steps = int(time / h);
 
-    //We determin the first 4 positions with the Runge_Kutta 4 method
-    nbody  sim = RK4_step(h, sim);
+    //We determine the first 4 positions with the Runge_Kutta 4 method
     array<nbody,4> sim_list;
     sim_list[0] = sim;
     for(int i=0; i<sim.bodies(); i++){
-        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() ; 
+        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
     }
     outfile << '\n';
-    outfile << setprecision(15);
     for (int i = 1; i < 4; i++){
         sim = RK4_step(h, sim);
         sim_list[i] = sim;
         for(int i=0; i<sim.bodies(); i++){
-        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() ; 
+        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
         outfile << '\n';
     }
@@ -81,7 +79,7 @@ void AM(double h, double time, nbody sim){
         nbody sim_AB = AB_step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
         nbody sim_AM = AM_step(h, sim, sim_AB, sim_list[1], sim_list[2], sim_list[3]);
        for(int i=0; i<sim.bodies(); i++){
-            outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() ; 
+            outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
         outfile << '\n';
         sim_list[0]=sim_list[1];
@@ -89,12 +87,39 @@ void AM(double h, double time, nbody sim){
         sim_list[2]=sim_list[3];
         sim_list[3]=sim_AM;
     }
+    outfile.close();
 }
 
 
 int main(){
     double h=0.01;
     double time = 500;
+    string initial_i;
     nbody sim;
+    int N = 0;
+    fstream initialNfile("Initial_cond.txt");
+
+    while (getline(initialNfile, initial_i)){
+            double m = stod(initial_i.substr(2,4));
+
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
+
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
+
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
+            
+            ++N;
+        };
+
+    sim.set_N(N);
+    initialNfile.close();
     AM(h, time, sim);
 }
