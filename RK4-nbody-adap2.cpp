@@ -1,0 +1,196 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+#include <array>
+#include <string>
+#include <string.h>
+#include "nbody2.hpp"
+using namespace std;
+
+double G = 1;
+
+void print(Vec a)
+{ cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
+
+Vec a(int i, nbody sim) {
+    
+    Vec ri= sim.r(i);
+    Vec ar={0,0,0};
+
+    for (int j =0; j<sim.bodies(); ++j){
+        Vec rj = sim.r(j);
+        double mj= sim.m(j);
+        double mi= sim.m(i);
+        Vec afst= ri-rj;
+
+        if (i!=j){
+            ar-= G*mj*afst/afst.norm3();
+            } 
+        }
+    return ar;}
+
+double Energy(nbody sim){
+    double E=0;
+
+    for (int i=0; i<sim.bodies();++i){
+        Vec ri = sim.r(i);
+        double mi=sim.m(i);
+        Vec vi= sim.v(i);
+        E+=mi*vi.norm2()/2;
+
+        for  (int j =0; j<sim.bodies(); ++j){
+            Vec rj = sim.r(j);
+            double mj= sim.m(j);
+            Vec afst= ri-rj;
+
+            if (i!=j){
+                E-= 1/2*G*mi*mj/afst.norm();
+                }
+            }
+    }
+
+     return E;}
+
+ // integratoren:
+
+    //Runge-Kutta
+nbody RK4N_step(double h, nbody sim){
+    nbody sim1 = sim;
+    nbody sim2 = sim;
+    nbody sim3 = sim;
+
+    for (int i=0; i < sim.bodies(); i++){
+        
+        Vec kx1 = h * sim.v(i);
+        Vec kv1 = h * a(i, sim);
+
+        Vec lx1 = sim.r(i) + 0.5 * kx1;
+        Vec lv1 = sim.v(i) + 0.5 * kv1;
+        sim1.swap_r(i, lx1);
+        sim1.swap_v(i, lv1);
+        
+        
+        sim.swap_r(i, sim.r(i) + 1./6. * kx1);
+        sim.swap_v(i, sim.v(i) + 1./6. * kv1);
+        }
+    
+
+    for (int i=0; i < sim.bodies(); i++){
+        Vec kx2 = h* sim1.v(i);
+        Vec kv2 = h * a(i, sim1);
+
+        Vec lx2 = sim1.r(i) + 0.5 * kx2;
+        Vec lv2 = sim.v(i) + 0.5 * kv2;
+        sim2.swap_r(i, lx2);
+        sim2.swap_v(i, lv2);
+        
+        sim.swap_r(i, sim.r(i) + 1./6. * 2 *  kx2);
+        sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv2);
+        }
+    
+    for (int i=0; i < sim.bodies(); i++){
+
+        Vec kx3 = h * sim2.v(i);
+        Vec kv3 = h * a(i, sim2);
+
+        Vec lx3 = sim2.r(i) + kx3;
+        Vec lv3 = sim2.v(i) + kv3;
+        sim3.swap_r(i, lx3);
+        sim3.swap_v(i, lv3);
+        
+        
+        sim.swap_r(i, sim.r(i) + 1./6. * 2 * kx3);
+        sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv3);
+        }
+    
+    for (int i=0; i < sim.bodies(); i++){
+
+        Vec kx4 = h * sim3.v(i);
+        Vec kv4 = h * a(i, sim3);
+
+        sim.swap_r(i, sim.r(i) + 1./6. * kx4);
+        sim.swap_v(i, sim.v(i) + 1./6. * kv4);
+        }
+    
+    return sim;
+    }
+
+
+int main(){
+    string initial_i;
+    nbody sim;
+    int N = 0;
+    int l = 0;
+    fstream initialNfile("Initial_cond.txt");
+
+    while (getline(initialNfile, initial_i)){
+        if(l>4){
+            double m = stod(initial_i.substr(2,4));
+
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
+
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
+
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
+
+            ++N;
+        }
+
+        ++l;
+        };
+
+    sim.set_N(N);
+    initialNfile.close();
+    
+    nbody simad = sim;
+    double h= 1e-3;
+    int time = 500;
+    int steps = time/h;
+    ofstream outfile("RK4N.txt");
+    outfile << setprecision(15);
+    ofstream outfile2("timestepRK4.txt");
+    outfile2 << setprecision(15);
+    
+    double delta = 0.;
+    const double deltamin = 0.01;
+    const double deltamax = 1;
+
+    for (int t=0; t < steps; t++){
+        
+        sim = RK4N_step(h, sim);
+        simad = RK4N_step(2*h, simad);
+
+        for(int i=0; i<sim.bodies(); i++){
+            delta = (sim.r(i)-simad.r(i)).norm();
+
+            if (delta >= deltamax) {
+                t = t - 1;
+                h = h/2.;
+                break;
+            }
+            else if (delta < deltamin) {
+                t = t - 1;
+                h=2.*h;
+                break;
+            }
+            else {
+                outfile2 << t << ' ' << h << '\n';
+                outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' ';
+            }
+
+            }
+            outfile << '\n';
+    }
+    
+    };
