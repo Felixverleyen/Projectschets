@@ -1,0 +1,79 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+#include <array>
+#include <string>
+#include "nbody.hpp"
+#include "E_en_a.hpp"
+using namespace std;
+
+
+int main(){
+     ofstream outfile("projectpos.txt");
+    outfile << setprecision(8);
+    ofstream outfile2("projectspeed.txt");
+    outfile2 << setprecision(8);
+    ofstream outfile3("projectenergy.txt");
+    outfile2 << setprecision(8);
+    int count=0;
+    ofstream time("projecttime.txt");
+    time << setprecision(8);
+    string initial_i;
+    nbody sim;
+    fstream initialNfile("Initial_cond.txt");
+
+    while (getline(initialNfile, initial_i)){
+        
+            double m = stod(initial_i.substr(2,4));
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
+        
+        };
+            
+    initialNfile.close();
+    nbody n0= sim;
+    nbody n1;
+    double theta= 1.351207;
+    for (double t = 0.00; t <= 200; t+=h){
+
+    time << t << '\n';
+    outfile3 << Energy(n0) << '\n';
+
+    for(int i=0; i<N; i++){ 
+    
+    Vec rn=n0.r(i);
+    rn= n0.r(i)+ h*theta*n0.v(i)*0.5;
+    n0.v(i) += theta*h*a(i,n0);
+    rn+= h*(1-theta)*n0.v(i)*0.5;
+    n0.v(i) += theta*h*(1-2*theta)*a(i,n0);
+    rn+= h*(1-theta)*n0.v(i)*0.5; 
+    n0.v(i) += theta*h*a(i,n0);
+    rn += h*theta*n0.v(i)*0.5;
+    
+    n1.r(i) = rn;
+    
+        for(int i=0; i<N; i++){
+        outfile << n1.r(i).x() << ' ' << n1.r(i).y()<<' '<<  n1.r(i).z()<<' ';
+         outfile2 <<n1.v(i).x() << ' ' <<n1.v(i).y()<<' '<< n1.v(i).z()<<' ';}
+        
+
+
+    };
+    for(int i=0; i<N; i++){  
+    n0.swap_r(i,n1.r(i));
+    n0.swap_v(i,n1.v(i));
+    outfile  << '\n';
+    outfile2 << '\n';
+    } 
