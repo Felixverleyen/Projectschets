@@ -8,7 +8,7 @@
 #include <array>
 using namespace std;
 
-double G=8;
+double G = 1;
 
 void print(Vec a){ 
     cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
@@ -30,6 +30,27 @@ Vec a(int i, nbody sim) {
         }
     return ar;}
 
+double Energy(nbody sim){
+    double E=0;
+
+    for (int i=0; i<sim.bodies();++i){
+        Vec ri = sim.r(i);
+        double mi=sim.m(i);
+        Vec vi= sim.v(i);
+        E+=mi*vi.norm2()/2;
+
+        for(int j =0; j<sim.bodies(); ++j){
+            Vec rj = sim.r(j);
+            double mj= sim.m(j);
+            Vec afst= ri-rj;
+
+            if (i!=j){
+                E-= 1/2*G*mi*mj/afst.norm();
+            }
+        }
+    }
+    return E;}
+
 
 nbody RK4_step(double h, nbody sim){
     nbody sim1 = sim;
@@ -49,7 +70,7 @@ nbody RK4_step(double h, nbody sim){
         
         sim.swap_r(i, sim.r(i) + 1./6. * kx1);
         sim.swap_v(i, sim.v(i) + 1./6. * kv1);
-        }
+    }
     
 
     for (int i=0; i < sim.bodies(); i++){
@@ -63,7 +84,7 @@ nbody RK4_step(double h, nbody sim){
         
         sim.swap_r(i, sim.r(i) + 1./6. * 2 *  kx2);
         sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv2);
-        }
+    }
     
     for (int i=0; i < sim.bodies(); i++){
 
@@ -78,7 +99,7 @@ nbody RK4_step(double h, nbody sim){
         
         sim.swap_r(i, sim.r(i) + 1./6. * 2 * kx3);
         sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv3);
-        }
+    }
     
     for (int i=0; i < sim.bodies(); i++){
 
@@ -87,8 +108,7 @@ nbody RK4_step(double h, nbody sim){
 
         sim.swap_r(i, sim.r(i) + 1./6. * kx4);
         sim.swap_v(i, sim.v(i) + 1./6. * kv4);
-        }
-    
+    }
     return sim;
 }
 
@@ -100,62 +120,71 @@ nbody AB_step(double h, nbody sim_AB, nbody sim0, nbody sim1, nbody sim2, nbody 
     return sim_AB;
 }
 
-nbody AM_step(double h, nbody sim_AM, nbody sim_AB, nbody sim1, nbody sim2, nbody sim3){
-    for(int i = 0; i < sim_AB.bodies(); i++){
-        sim_AM.swap_v(i, sim3.v(i) + h/24. * (9*a(i, sim_AM) + 19*a(i, sim3) - 5*a(i, sim2) + a(i, sim1)));
-        sim_AM.swap_r(i, sim3.r(i) + h/24. * (9*sim_AM.v(i) + 19*sim3.v(i) - 5*sim2.v(i) + sim1.v(i)));
+nbody AM_step(double h, nbody sim, nbody sim1, nbody sim2, nbody sim3){
+    for(int i = 0; i < sim.bodies(); i++){
+        sim.swap_v(i, sim3.v(i) + h/24. * (9*a(i, sim) + 19*a(i, sim3) - 5*a(i, sim2) + 1*a(i, sim1)));
+        sim.swap_r(i, sim3.r(i) + h/24. * (9*sim.v(i) + 19*sim3.v(i) - 5*sim2.v(i) + 1*sim1.v(i)));
     }
-    return sim_AM;
+    return sim;
 }
 
 void AM(double h, double time, nbody sim){
-    ofstream outfile("Adams-Moulton.txt");
-    outfile << setprecision(15);
+    ofstream outfile1("Adams-Moulton.txt");
+    ofstream outfile2("Adams-MoultonE.txt");
+    outfile1 << setprecision(15);
+    outfile2 << setprecision(15);
     int steps = int(time / h);
 
     //We determine the first 4 positions with the Runge_Kutta 4 method
     array<nbody,4> sim_list;
     sim_list[0] = sim;
     for(int i=0; i<sim.bodies(); i++){
-        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
+        outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
     }
-    outfile << '\n';
-    for (int i = 1; i < 4; i++){
+    outfile1 << '\n';
+    double E = Energy(sim);
+    outfile2 << E << '\n';
+    for(int i = 1; i < 4; i++){
         sim = RK4_step(h, sim);
         sim_list[i] = sim;
         for(int i=0; i<sim.bodies(); i++){
-        outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
+            outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
-        outfile << '\n';
+        outfile1 << '\n';
+        E = Energy(sim);
+        outfile2 << E << '\n';
     }
 
     //The Adams-Moulton method is implicit, we first have to make a prediction of the position with the Adams-Bashford method
     //We then use the Adams-Moulton method to correct this prediction 
     for (int i=4; i<steps; i++){
-        nbody sim_AB = AB_step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
-        nbody sim_AM = AM_step(h, sim, sim_AB, sim_list[1], sim_list[2], sim_list[3]);
-       for(int i=0; i<sim_AM.bodies(); i++){
-            outfile << sim_AM.r(i).x() << ' ' << sim_AM.r(i).y() << ' ' << sim_AM.r(i).z() << ' '; 
+        sim = AB_step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
+        sim = AM_step(h, sim, sim_list[1], sim_list[2], sim_list[3]);
+        for(int i=0; i<sim.bodies(); i++){
+            outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
-        outfile << '\n';
+        outfile1 << '\n';
+        E = Energy(sim);
+        outfile2 << E << '\n';
         sim_list[0]=sim_list[1];
         sim_list[1]=sim_list[2];
         sim_list[2]=sim_list[3];
-        sim_list[3]=sim_AM;
+        sim_list[3]=sim;
     }
-    outfile.close();
+    outfile1.close();
+    outfile2.close();
 }
 
 
 int main(){
-    double h=0.001;
-    double time = 1;
     string initial_i;
     nbody sim;
     int N = 0;
+    int l = 0;
     fstream initialNfile("Initial_cond.txt");
 
     while (getline(initialNfile, initial_i)){
+        if(l>4){
             double m = stod(initial_i.substr(2,4));
 
             double rx = stod(initial_i.substr(7, 4));
@@ -165,17 +194,23 @@ int main(){
             double vy = stod(initial_i.substr(27, 4));
             double vz = stod(initial_i.substr(32, 4));
 
+                
             Vec pos{rx, ry, rz};
             Vec vel{vx,vy,vz};
 
             sim.add_mass(m);
             sim.add_pos(pos);
             sim.add_vel(vel);
-            
+
             ++N;
+        }
+
+        ++l;
         };
 
     sim.set_N(N);
     initialNfile.close();
+    double h = 1e-5;
+    double time = 0.03;
     AM(h, time, sim);
 }

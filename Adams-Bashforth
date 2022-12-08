@@ -1,0 +1,143 @@
+
+   #define _USE_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+#include <array>
+#include <string>
+#include <string.h>
+#include "nbody.hpp"
+#include "E_en_a.hpp"
+using namespace std;
+const int inputorder=3;   
+
+
+
+int main(){
+    int N=0;
+    ofstream outfile("projectpos.txt");
+    outfile << setprecision(8);
+    ofstream outfile2("projectspeed.txt");
+    outfile2 << setprecision(8);
+    ofstream outfile3("projectenergy.txt");
+    outfile2 << setprecision(8);
+    int count=0;
+    ofstream time("projecttime.txt");
+    time << setprecision(8);
+
+    string initial_i;
+    nbody sim;
+    fstream initialNfile("Initial_cond.txt");
+
+
+    while (getline(initialNfile, initial_i)){
+        
+            double m = stod(initial_i.substr(2,4));
+
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
+        ++N;
+        };
+            
+    initialNfile.close();
+    sim.set_N(N);
+    nbody n0= sim;
+    nbody n1= sim;
+    nbody n2 = sim;
+    nbody n3 =sim;
+    nbody n4 =sim;
+        //initialiseren, voor orde 1 enkel stap nul nodig, voor orde 4 tot en met stap 3 nodig. Voor n=1 enkel de eerste uitschrijven, 
+    //voor n=4 de eerste 3 vinden door de lagere ordes te gebruiken.
+
+    
+    for(int i=0; i<N; i++){
+        outfile << n0.r(i).x() << ' ' << n0.r(i).y()<<' '<<  n0.r(i).z()<<' ';
+         outfile2 <<  n0.v(i).x() << ' ' <<n0.v(i).y()<<' '<< n0.v(i).z()<<' ';
+        n1.swap_r(i,n0.r(i)+h*n0.v(i));
+        n1.swap_v(i, n1.v(i)+h*a(i,n0));} outfile  << '\n';
+    outfile2 << '\n';
+    if (inputorder>1){for(int i=0; i<N; i++){
+         outfile << n1.r(i).x() << ' ' << n1.r(i).y()<<' '<<  n1.r(i).z()<<' ';
+         outfile2 <<n1.v(i).x() << ' ' <<n1.v(i).y()<<' '<< n1.v(i).z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+
+
+    for(int i=0; i<N; i++){
+        n2.swap_r(i, n1.r(i) +h*(3./2.*n1.v(i)-0.5*n0.v(i)));
+        n2.swap_v(i, n1.v(i) +h*(3./2.*a(i,n1)-0.5*a(i,n0)));}
+        if (inputorder>2){for(int i=0; i<N; i++){
+         outfile <<  n2.r(i).x() << ' ' << n2.r(i).y()<<' '<<  n2.r(i).z()<<' ';
+         outfile2 << n2.v(i).x() << ' ' <<n2.v(i).y()<<' '<< n2.v(i).z()<<' ';} outfile <<'\n'; outfile2 << '\n';}
+    
+    for(int i=0; i<N; i++){
+        n3.swap_r(i,n2.r(i)+h/12.*(23*n2.v(i)-16*n1.v(i)+5*n0.v(i)));
+        n3.swap_v(i,n2.v(i)+h/12.*(23*a(i,n2)-16*a(i,n1)+5*a(i,n0)));}
+        if (inputorder>2){for(int i=0; i<N; i++){
+         outfile <<  n3.r(i).x() << ' ' << n3.r(i).y()<<' '<<  n3.r(i).z()<<' ';
+         outfile2 << n3.v(i).x() << ' ' <<n3.v(i).y()<<' '<< n3.v(i).z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+         
+    for(int i=0; i<N; i++){
+        n4.swap_r(i,n3.r(i) +h/24.*(55*n3.v(i)-59*n2.v(i)+37*n1.v(i)-9*n0.v(i)));
+        n4.swap_v(i,n3.v(i) +h/24.*(55*a(i,n3)-59*a(i,n2)+37*a(i,n1)-9*a(i,n0)));}
+        if (inputorder>3){for(int i=0; i<N; i++){
+         outfile << n4.r(i).x() << ' ' << n4.r(i).y()<<' '<<  n4.r(i).z()<<' ';
+         outfile2 << n4.v(i).x() << ' ' <<n4.v(i).y()<<' '<< n4.v(i).z()<<' ';}outfile <<'\n'; outfile2 << '\n';}
+
+    
+// iteratie beginnen over tijd en dan over alle posities, functie afhankelijk van gevraagde orde
+    for (double t = 0.00; t <=100; t+=h){
+    
+    for(int i=0; i<N; i++){  
+    n0.swap_r(i,n1.r(i));
+    n0.swap_v(i,n1.v(i));
+    n1.swap_r(i,n2.r(i));
+    n1.swap_v(i,n2.v(i));
+    n2.swap_r(i,n3.r(i));
+    n2.swap_v(i,n3.v(i));
+    n3.swap_r(i,n4.r(i));
+    n3.swap_v(i,n4.v(i));}
+
+    time << t << '\n';
+    outfile3 << Energy(n0) << '\n';
+
+    for(int i=0; i<N; i++){      
+    if(inputorder==1){
+        n1.swap_r(i,n0.r(i)+h*n0.v(i));
+        n1.swap_v(i, n1.v(i)+h*a(i,n0));
+         outfile << n1.r(i).x() << ' ' << n1.r(i).y()<<' '<<  n1.r(i).z()<<' ';
+         outfile2 <<n1.v(i).x() << ' ' <<n1.v(i).y()<<' '<< n1.v(i).z()<<' ';}
+    if (inputorder==2){
+        n2.swap_r(i, n1.r(i) +h*(3./2.*n1.v(i)-0.5*n0.v(i)));
+        n2.swap_v(i, n1.v(i) +h*(3./2.*a(i,n1)-0.5*a(i,n0)));
+         outfile <<  n2.r(i).x() << ' ' << n2.r(i).y()<<' '<<  n2.r(i).z()<<' ';
+         outfile2 << n2.v(i).x() << ' ' <<n2.v(i).y()<<' '<< n2.v(i).z()<<' ';}
+    if (inputorder==3){
+        n3.swap_r(i,n2.r(i)+h/12.*(23*n2.v(i)-16*n1.v(i)+5*n0.v(i)));
+        n3.swap_v(i,n2.v(i)+h/12.*(23*a(i,n2)-16*a(i,n1)+5*a(i,n0)));
+         outfile <<  n3.r(i).x() << ' ' << n3.r(i).y()<<' '<<  n3.r(i).z()<<' ';
+         outfile2 << n3.v(i).x() << ' ' <<n3.v(i).y()<<' '<< n3.v(i).z()<<' ';}
+    if (inputorder==4){
+          n4.swap_r(i,n3.r(i) +h/24.*(55*n3.v(i)-59*n2.v(i)+37*n1.v(i)-9*n0.v(i)));
+            n4.swap_v(i,n3.v(i) +h/24.*(55*a(i,n3)-59*a(i,n2)+37*a(i,n1)-9*a(i,n0)));
+         outfile << n4.r(i).x() << ' ' << n4.r(i).y()<<' '<<  n4.r(i).z()<<' ';
+         outfile2 << n4.v(i).x() << ' ' <<n4.v(i).y()<<' '<< n4.v(i).z()<<' ';}     
+
+
+    }
+    outfile  << '\n';
+    outfile2 << '\n';};
+    };
+
+
+
+      

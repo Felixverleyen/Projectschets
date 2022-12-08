@@ -10,13 +10,8 @@
 #include "nbody.hpp"
 using namespace std;
 
+double G = 1;
 
-double G=8;
-double mu=0.01;
-double h=0.0001;
-int const N=4;
-
-   
 void print(Vec a)
 { cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
 
@@ -25,7 +20,7 @@ Vec a(int i, nbody sim) {
     Vec ri= sim.r(i);
     Vec ar={0,0,0};
 
-    for (int j =0; j<N; ++j){
+    for (int j =0; j<sim.bodies(); ++j){
         Vec rj = sim.r(j);
         double mj= sim.m(j);
         double mi= sim.m(i);
@@ -40,13 +35,13 @@ Vec a(int i, nbody sim) {
 double Energy(nbody sim){
     double E=0;
 
-    for (int i=0; i<N;++i){
+    for (int i=0; i<sim.bodies();++i){
         Vec ri = sim.r(i);
         double mi=sim.m(i);
         Vec vi= sim.v(i);
         E+=mi*vi.norm2()/2;
 
-        for  (int j =0; j<N; ++j){
+        for  (int j =0; j<sim.bodies(); ++j){
             Vec rj = sim.r(j);
             double mj= sim.m(j);
             Vec afst= ri-rj;
@@ -126,40 +121,50 @@ nbody RK4N_step(double h, nbody sim){
 
 int main(){
     string initial_i;
-    nbody sim(2);
+    nbody sim;
+    int N = 0;
     int l = 0;
     fstream initialNfile("Initial_cond.txt");
 
     while (getline(initialNfile, initial_i)){
-        
-           
+        if(l>4){
+            double m = stod(initial_i.substr(2,4));
 
-        double m = stod(initial_i.substr(2,4));
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
 
-        double rx = stod(initial_i.substr(7, 4));
-        double ry = stod(initial_i.substr(12, 4));
-        double rz = stod(initial_i.substr(17, 4));
-        double vx = stod(initial_i.substr(22, 4));
-        double vy = stod(initial_i.substr(27, 4));
-        double vz = stod(initial_i.substr(32, 4));
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
 
-            
-        Vec pos{rx, ry, rz};
-        Vec vel{vx,vy,vz};
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
 
-        sim.add_mass(m);
-        sim.add_pos(pos);
-        sim.add_vel(vel);
-        
+            ++N;
+        }
+
+        ++l;
         };
+
+    sim.set_N(N);
     initialNfile.close();
-    int time = 1;
-    int steps = time / h;
+    
+    double h= 1e-3;
+    int time = 500;
+    int steps = time/h;
     ofstream outfile("RK4N.txt");
+
     for (int t=0; t < steps; t++){
         
         sim = RK4N_step(h, sim);
-        outfile << sim.r(0).x() << ' ' << sim.r(0).y() << '\n';
+        for(int i=0; i<sim.bodies(); i++){
+                outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
+            }
+            outfile << '\n';
     }
     
     };
