@@ -10,53 +10,6 @@
 #include "nbody.hpp"
 using namespace std;
 
-double G = 1;
-
-void print(Vec a)
-{ cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
-
-Vec a(int i, nbody sim) {
-    
-    Vec ri= sim.r(i);
-    Vec ar={0,0,0};
-
-    for (int j =0; j<sim.bodies(); ++j){
-        Vec rj = sim.r(j);
-        double mj= sim.m(j);
-        double mi= sim.m(i);
-        Vec afst= ri-rj;
-
-        if (i!=j){
-            ar-= G*mj*afst/afst.norm3();
-            } 
-        }
-    return ar;}
-
-double Energy(nbody sim){
-    double E=0;
-
-    for (int i=0; i<sim.bodies();++i){
-        Vec ri = sim.r(i);
-        double mi=sim.m(i);
-        Vec vi= sim.v(i);
-        E+=mi*vi.norm2()/2;
-
-        for  (int j =0; j<sim.bodies(); ++j){
-            Vec rj = sim.r(j);
-            double mj= sim.m(j);
-            Vec afst= ri-rj;
-
-            if (i!=j){
-                E-= 1/2*G*mi*mj/afst.norm();
-                }
-            }
-    }
-
-     return E;}
-
- // integratoren:
-
-    //Runge-Kutta
 nbody RK4N_step(double h, nbody sim){
     nbody sim1 = sim;
     nbody sim2 = sim;
@@ -118,53 +71,29 @@ nbody RK4N_step(double h, nbody sim){
     return sim;
     }
 
-
-int main(){
-    string initial_i;
-    nbody sim;
-    int N = 0;
-    int l = 0;
-    fstream initialNfile("Initial_cond.txt");
-
-    while (getline(initialNfile, initial_i)){
-        if(l>4){
-            double m = stod(initial_i.substr(2,4));
-
-            double rx = stod(initial_i.substr(7, 4));
-            double ry = stod(initial_i.substr(12, 4));
-            double rz = stod(initial_i.substr(17, 4));
-            double vx = stod(initial_i.substr(22, 4));
-            double vy = stod(initial_i.substr(27, 4));
-            double vz = stod(initial_i.substr(32, 4));
-
-            Vec pos{rx, ry, rz};
-            Vec vel{vx,vy,vz};
-
-            sim.add_mass(m);
-            sim.add_pos(pos);
-            sim.add_vel(vel);
-
-            ++N;
-        }
-
-        ++l;
-        };
-
-    sim.set_N(N);
-    initialNfile.close();
-    
-    double h= 1e-3;
-    int time = 500;
-    int steps = time/h;
-    ofstream outfile("RK4N.txt");
+void RKN4(double h, double time, nbody sim){
+    ofstream outfile1("RK4N.txt");
+    ofstream outfile2("RK4NLE.txt");
+    outfile1 << setprecision(15);
+    outfile2 << setprecision(15);
+    int steps = int(time / h);
 
     for (int t=0; t < steps; t++){
-        
         sim = RK4N_step(h, sim);
         for(int i=0; i<sim.bodies(); i++){
-                outfile << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
-            }
-            outfile << '\n';
+            outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
+        }
+        outfile1 << '\n';
+        double E = Energy(sim);
+        outfile2 << E << '\n';
     }
-    
-    };
+}
+
+
+int main(){
+    string file = "Inital_cond.txt";
+    nbody sim = init_sim(file);
+    double h= 1e-3;
+    int time = 10;
+    RKN4(h, time, sim);
+};
