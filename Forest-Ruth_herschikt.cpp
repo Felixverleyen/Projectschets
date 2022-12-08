@@ -9,33 +9,30 @@
 #include "nbody.hpp"
 using namespace std;
 
+double theta= 1.351207;
 
-nbody verlet_halfstep(double h, nbody sim_half){
-    for (int i=0; i<sim_half.bodies(); i++){
-        sim_half.swap_v(i, sim_half.v(i) + 0.5*h*a(i,sim_half));
+nbody FR_step(double h, nbody n0){
+    for(int i = 0; i < n0.bodies(); i++){
+        n0.swap_r(i, n0.r(i)+h*theta*n0.v(i)*0.5);
+        n0.swap_v(i, n0.v(i)+theta*h*a(i,n0));
+        n0.swap_r(i, n0.r(i)+h*(1-theta)*n0.v(i)*0.5);
+        n0.swap_v(i, n0.v(i)+h*(1-2*theta)*a(i,n0));
+        n0.swap_r(i, n0.r(i)+ h*(1-theta)*n0.v(i)*0.5); 
+        n0.swap_v(i, n0.v(i)+theta*h*a(i,n0));
+        n0.swap_r(i, n0.r(i)+h*theta*n0.v(i)*0.5);
     }
-    return sim_half;
- }
+    return n0;
+}
 
-nbody verlet_step(double h, nbody sim, nbody sim_half){
-    for (int i=0; i<sim.bodies(); i++) {
-        sim.swap_r(i, sim.r(i) + h*sim_half.v(i));
-        sim.swap_v(i, sim_half.v(i) + 0.5*h*a(i,sim));
-    }
-    return sim;
- }
-
-// velocity verlet
-void verlet(double h, double time, nbody sim) {
-    ofstream outfile1("verlet.txt");
-    ofstream outfile2("VerletLE.txt");
+void FR(double h, double time, nbody sim){
+    ofstream outfile1("FR.txt");
+    ofstream outfile2("FRLE.txt");
     outfile1 << setprecision(15);
     outfile2 << setprecision(15); 
     int steps = int(time / h);
     
-    for (double t=0; t<steps; t++) {
-        nbody sim_half = verlet_halfstep(h, sim);
-        sim = verlet_step(h, sim, sim_half);
+    for (double t=0; t<steps; t++){
+        sim = FR_step(h, sim);
         for(int i=0; i<sim.bodies(); i++){
             outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
@@ -48,12 +45,12 @@ void verlet(double h, double time, nbody sim) {
     outfile2.close();
 }
 
+
+
 int main(){
     string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
     double h = 1e-5;
     double time = 10;
-    verlet(h, time, sim);
+    FR(h, time, sim);
 }
-
-
