@@ -64,9 +64,11 @@ class nbody{
     vector<double> _mass;
     vector<Vec> _pos;
     vector<Vec> _vel;
+    
 
     public:
 
+    
     void set_N(int n) {N=n;};
     int bodies() const{return N;};
 
@@ -88,6 +90,7 @@ class nbody{
         _vel.push_back(v);
     };
 
+    vector<Vec> pos() const{return _pos;};
     //methods om een element in een lijst te vervangen, input: (positie in de lijst, nieuwe waarde)
     void swap_m(int k, double m){
         _mass[k] = m;
@@ -102,3 +105,124 @@ class nbody{
     }
 
 };
+
+class counter{
+    int count = 0;
+
+    public:
+    void countplus() {count++;};
+    int getcount() {return count;};
+    void reset() {count = 0;};
+
+    double order(int N, int steps) { double averaged_count = (1.* count) / (1. * steps * N);
+    return averaged_count;};
+};
+
+double G=1;
+counter drivercount;
+
+
+double time_step_scale(nbody sim, int i, double schaal){
+    vector<double> diff;
+
+    for (int j = 0; j < sim.bodies(); j++){
+        if (j != i){
+            Vec d = sim.r(i) - sim.r(j);
+
+            diff.push_back(d.norm());
+        }
+        else { continue;}
+        
+    }
+    
+    double min = diff[0];
+    
+    for (i = 0; i < sim.bodies() - 1; i++){
+        if(diff[i] < min){
+            min = diff[i];
+        }
+    }
+    
+    return min / schaal * 0.1;
+}
+
+void print(Vec a)
+{ cout << a.x() << ' ' << a.y() << ' '<< a.z() << endl; }
+
+Vec a(int i, nbody sim) {
+    drivercount.countplus();
+    Vec ri= sim.r(i);
+    Vec ar={0,0,0};
+
+    for (int j =0; j<sim.bodies(); ++j){
+        Vec rj = sim.r(j);
+        double mj= sim.m(j);
+        double mi= sim.m(i);
+        Vec afst= ri-rj;
+
+        if (i!=j){
+            ar-= G*mj*afst/afst.norm3();
+            
+            } 
+        }
+    return ar;}
+
+double Energy(nbody sim){
+    double E=0;
+
+    for (int i=0; i<sim.bodies();++i){
+        Vec ri = sim.r(i);
+        double mi=sim.m(i);
+        Vec vi= sim.v(i);
+        E+=mi*vi.norm2()/2;
+
+        for  (int j =0; j<sim.bodies(); ++j){
+            Vec rj = sim.r(j);
+            double mj= sim.m(j);
+            Vec afst= ri-rj;
+
+            if (i!=j){
+                E-= 1/2*G*mi*mj/afst.norm();
+                }
+            }
+    }
+
+     return E;}
+
+
+nbody init_sim(string file){
+    string initial_i;
+    nbody sim;
+    int N = 0;
+    int l = 0;
+    fstream initialNfile(file);
+
+    while (getline(initialNfile, initial_i)){
+        if(l>4){
+            double m = stod(initial_i.substr(2,4));
+
+            double rx = stod(initial_i.substr(7, 4));
+            double ry = stod(initial_i.substr(12, 4));
+            double rz = stod(initial_i.substr(17, 4));
+            double vx = stod(initial_i.substr(22, 4));
+            double vy = stod(initial_i.substr(27, 4));
+            double vz = stod(initial_i.substr(32, 4));
+
+                
+            Vec pos{rx, ry, rz};
+            Vec vel{vx,vy,vz};
+
+            sim.add_mass(m);
+            sim.add_pos(pos);
+            sim.add_vel(vel);
+
+            ++N;
+        }
+
+        ++l;
+        };
+
+    sim.set_N(N);
+    initialNfile.close();
+    return sim;
+}
