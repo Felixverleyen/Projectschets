@@ -91,9 +91,9 @@ void RKN4(double h, double time, nbody sim){
 
 
 int main(){
-    string file = "Inital_cond.txt";
+    string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
-    double h= 1e-3;
+    double h= 1e-4;
     int time = 10;
     RKN4(h, time, sim);
 };
