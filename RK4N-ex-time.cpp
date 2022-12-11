@@ -160,7 +160,7 @@ int main(){
     int steps = time/h;
     ofstream outfile("RK4N.txt");
     outfile << setprecision(15);
-    ofstream outfile2("duration7B.txt");
+    ofstream outfile2("duration.txt");
     outfile2 << setprecision(15);
     ofstream outfile3;
     outfile3.open("execution-times.txt", ios_base::app);
