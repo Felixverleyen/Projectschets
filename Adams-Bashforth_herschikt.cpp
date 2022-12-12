@@ -125,7 +125,7 @@ void AB(double h, double time, nbody sim, int inputorder){
 int main(){
     string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
-    double h = 1e-5;
+    double h = 1e-4;
     double time = 10;
     int inputorder = 4;
     AB(h, time, sim, inputorder);
