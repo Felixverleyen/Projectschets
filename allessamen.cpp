@@ -11,8 +11,8 @@
 using namespace std;
 
 
-double G=1;
-counter drivercount;
+//double G=1;
+//counter drivercount;
 
 ///// integratoren:
 
@@ -175,16 +175,24 @@ void verlet(double h, double time, nbody sim) {
 double theta= 1.351207;
 
 nbody FR_step(double h, nbody sim){
-    for(int i = 0; i < n0.bodies(); i++){
+    for(int i = 0; i < sim.bodies(); i++){
         sim.swap_r(i, sim.r(i)+h*theta*sim.v(i)*0.5);
+    }
+    for(int i = 0; i < sim.bodies(); i++){
         sim.swap_v(i, sim.v(i)+theta*h*a(i,sim));
         sim.swap_r(i, sim.r(i)+h*(1-theta)*sim.v(i)*0.5);
+        
+    }
+     for(int i = 0; i < sim.bodies(); i++){
         sim.swap_v(i, sim.v(i)+h*(1-2*theta)*a(i,sim));
         sim.swap_r(i, sim.r(i)+ h*(1-theta)*sim.v(i)*0.5); 
+        
+    }
+    for(int i = 0; i < sim.bodies(); i++){
         sim.swap_v(i, sim.v(i)+theta*h*a(i,sim));
         sim.swap_r(i, sim.r(i)+h*theta*sim.v(i)*0.5);
     }
-    return n0;
+    return sim;
 }
 
 void FR(double h, double time, nbody sim){
@@ -411,7 +419,7 @@ int main(){
     
     //RK4integrator(h, time, sim);
     //verlet(h, time, sim);
-    //FR(h, time, sim);
+    FR(h, time, sim);
     //foresth-ruth(h)
     //AM(h, time, sim);
     //AB(h, time, sim, 3);
