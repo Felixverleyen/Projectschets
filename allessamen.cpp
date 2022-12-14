@@ -281,7 +281,7 @@ void AB(double h, double time, nbody sim, int inputorder){
 
 
     if(inputorder==1){
-        for (int i=1; i<steps; i++){
+        for (int i=0; i<steps; i++){
             sim = AB_1step(h, sim, sim_list[0]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -294,7 +294,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     }
 
     if(inputorder==2){
-        for (int i=1; i<steps; i++){
+        for (int i=0; i<steps; i++){
             sim = AB_2step(h, sim, sim_list[0], sim_list[1]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -308,7 +308,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     }
 
     if(inputorder==3){
-        for (int i=1; i<steps; i++){
+        for (int i=0; i<steps; i++){
             sim = AB_3step(h, sim, sim_list[0], sim_list[1], sim_list[2]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -323,7 +323,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     }
 
     if(inputorder==4){
-        for (int i=1; i<steps; i++){
+        for (int i=0; i<steps; i++){
             sim = AB_4step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -381,7 +381,7 @@ void AM(double h, double time, nbody sim){
     //The Adams-Moulton method is implicit, we first have to make a prediction of the position with the Adams-Bashford method
     //We then use the Adams-Moulton method to correct this prediction 
 
-    for (int i=4; i<steps; i++){
+    for (int i=0; i<steps; i++){
         sim = AB_4step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
         sim = AM_step(h, sim, sim_list[1], sim_list[2], sim_list[3]);
         for(int i=0; i<sim.bodies(); i++){
@@ -413,11 +413,11 @@ int main(){
     string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
     double h = 1e-5;
-    double time = 100;
+    double time = 0.1;
     
     RK4integrator(h, time, sim);
-    //verlet(h, time, sim);
-    //FR(h, time, sim);
-    //AB(h, time, sim, 4);
-    //AM(h, time, sim);
+    verlet(h, time, sim);
+    FR(h, time, sim);
+    AB(h, time, sim, 4);
+    AM(h, time, sim);
 };
