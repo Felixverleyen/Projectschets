@@ -197,7 +197,7 @@ nbody FR_step(double h, nbody sim){
 
 void FR(double h, double time, nbody sim){
     ofstream outfile1("FR.txt");
-    ofstream outfile2("FRLE.txt");
+    ofstream outfile2("FRE.txt");
     outfile1 << setprecision(15);
     outfile2 << setprecision(15); 
     int steps = int(time / h);
@@ -288,6 +288,7 @@ void AB(double h, double time, nbody sim, int inputorder){
             }
             outfile1 << '\n';
             E = Energy(sim);
+            outfile2 << E << '\n';
             sim_list[0] = sim;
         }
     }
@@ -300,6 +301,7 @@ void AB(double h, double time, nbody sim, int inputorder){
             }
             outfile1 << '\n';
             E = Energy(sim);
+            outfile2 << E << '\n';
             sim_list[0] = sim_list[1];
             sim_list[1] = sim;
         }
@@ -313,6 +315,7 @@ void AB(double h, double time, nbody sim, int inputorder){
             }
             outfile1 << '\n';
             E = Energy(sim);
+            outfile2 << E << '\n';
             sim_list[0] = sim_list[1];
             sim_list[1] = sim_list[2];
             sim_list[2] = sim;
@@ -327,6 +330,7 @@ void AB(double h, double time, nbody sim, int inputorder){
             }
             outfile1 << '\n';
             E = Energy(sim);
+            outfile2 << E << '\n';
             sim_list[0] = sim_list[1];
             sim_list[1] = sim_list[2];
             sim_list[2] = sim_list[3];
@@ -346,7 +350,6 @@ void AB(double h, double time, nbody sim, int inputorder){
 //Adams-Moulton
 
 nbody AM_step(double h, nbody sim, nbody sim1, nbody sim2, nbody sim3){
-    
     for(int i = 0; i < sim.bodies(); i++){
         sim.swap_v(i, sim3.v(i) + h/24. * (9*a(i, sim) + 19*a(i, sim3) - 5*a(i, sim2) + 1*a(i, sim1)));
         sim.swap_r(i, sim3.r(i) + h/24. * (9*sim.v(i) + 19*sim3.v(i) - 5*sim2.v(i) + 1*sim1.v(i)));
@@ -363,33 +366,28 @@ void AM(double h, double time, nbody sim){
 
     //We determine the first 4 positions with the Runge_Kutta 4 method
     array<nbody,4> sim_list;
-    sim_list[0] = sim;
-    for(int i=0; i<sim.bodies(); i++){
-        outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
-    }
-    outfile1 << '\n';
     double E = Energy(sim);
-    outfile2 << E << '\n';
-    for(int i = 1; i < 4; i++){
-        //double h = time_step_scale(sim, 0, 0.5) * u;
-        sim = RK4N_step(h, sim);
-        sim_list[i] = sim;
-        for(int i=0; i<sim.bodies(); i++){
-            outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
-        }
-        outfile1 << '\n';
-        E = Energy(sim);
-        outfile2 << E << '\n';
-    }
+    sim_list[0] = sim;
+
+    sim = AB_1step(h, sim, sim_list[0]);
+    sim_list[1] = sim;
+    
+    sim = AB_2step(h, sim, sim_list[0], sim_list[1]);
+    sim_list[2] = sim;
+
+    sim = AB_3step(h, sim, sim_list[0], sim_list[1], sim_list[2]);
+    sim_list[3] = sim;
 
     //The Adams-Moulton method is implicit, we first have to make a prediction of the position with the Adams-Bashford method
     //We then use the Adams-Moulton method to correct this prediction 
+
     for (int i=4; i<steps; i++){
         sim = AB_4step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
         sim = AM_step(h, sim, sim_list[1], sim_list[2], sim_list[3]);
         for(int i=0; i<sim.bodies(); i++){
             outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
+
         outfile1 << '\n';
         E = Energy(sim);
         outfile2 << E << '\n';
@@ -415,13 +413,11 @@ int main(){
     string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
     double h = 1e-5;
-    double time = 10;
+    double time = 100;
     
-    //RK4integrator(h, time, sim);
+    RK4integrator(h, time, sim);
     //verlet(h, time, sim);
-    FR(h, time, sim);
-    //foresth-ruth(h)
+    //FR(h, time, sim);
+    //AB(h, time, sim, 4);
     //AM(h, time, sim);
-    //AB(h, time, sim, 3);
-    
 };
