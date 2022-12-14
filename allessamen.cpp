@@ -483,7 +483,7 @@ void AM(double h, double time, nbody sim){
     outfile1.close();
     outfile2.close();
 
-    double meanduration = tot / steps;
+    double meanduration = tot / (steps-4);
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
