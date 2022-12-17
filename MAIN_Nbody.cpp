@@ -27,6 +27,7 @@ nbody RK4N_step(double h, nbody sim){
     nbody sim1 = sim;
     nbody sim2 = sim;
     nbody sim3 = sim;
+    nbody sim4 = sim;
 
     for (int i=0; i < sim.bodies(); i++){
         
@@ -40,8 +41,8 @@ nbody RK4N_step(double h, nbody sim){
         sim1.swap_v(i, lv1);
         
         
-        sim.swap_r(i, sim.r(i) + 1./6. * kx1);
-        sim.swap_v(i, sim.v(i) + 1./6. * kv1);
+        sim4.swap_r(i, sim.r(i) + 1./6. * kx1);
+        sim4.swap_v(i, sim.v(i) + 1./6. * kv1);
         }
     
 
@@ -51,13 +52,15 @@ nbody RK4N_step(double h, nbody sim){
         Vec kx2 = h * sim1.v(i);
         Vec kv2 = h * a(i, sim1);
 
-        Vec lx2 = sim1.r(i) + 0.5 * kx2;
+        Vec lx2 = sim.r(i) + 0.5 * kx2;
         Vec lv2 = sim.v(i) + 0.5 * kv2;
         sim2.swap_r(i, lx2);
         sim2.swap_v(i, lv2);
         
-        sim.swap_r(i, sim.r(i) + 1./6. * 2 *  kx2);
-        sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv2);
+        Vec ux2 = sim4.r(i) + 1./6. * 2 * kx2;
+        Vec uv2 = sim4.v(i) + 1./6. * 2 * kv2;
+        sim4.swap_r(i, ux2 );
+        sim4.swap_v(i, uv2);
         }
     
     for (int i=0; i < sim.bodies(); i++){
@@ -66,14 +69,14 @@ nbody RK4N_step(double h, nbody sim){
         Vec kx3 = h * sim2.v(i);
         Vec kv3 = h * a(i, sim2);
 
-        Vec lx3 = sim2.r(i) + kx3;
-        Vec lv3 = sim2.v(i) + kv3;
+        Vec lx3 = sim.r(i) + kx3;
+        Vec lv3 = sim.v(i) + kv3;
         sim3.swap_r(i, lx3);
         sim3.swap_v(i, lv3);
         
         
-        sim.swap_r(i, sim.r(i) + 1./6. * 2 * kx3);
-        sim.swap_v(i, sim.v(i) + 1./6. * 2 * kv3);
+        sim4.swap_r(i, sim4.r(i) + 1./6. * 2 * kx3);
+        sim4.swap_v(i, sim4.v(i) + 1./6. * 2 * kv3);
         }
     
     for (int i=0; i < sim.bodies(); i++){
@@ -82,18 +85,21 @@ nbody RK4N_step(double h, nbody sim){
         Vec kx4 = h * sim3.v(i);
         Vec kv4 = h * a(i, sim3);
 
-        sim.swap_r(i, sim.r(i) + 1./6. * kx4);
-        sim.swap_v(i, sim.v(i) + 1./6. * kv4);
+        sim4.swap_r(i, sim4.r(i) + 1./6. * kx4);
+        sim4.swap_v(i, sim4.v(i) + 1./6. * kv4);
         }
-    
+
+    sim = sim4;
     return sim;
     };
 
 void RK4integrator(double u, double time, nbody sim){
     
     ofstream outfile1("RK4N.txt");
-    ofstream outfile2("RK4N_E.txt");
-    bool stop = false;
+    ofstream outfile2("RK4NE.txt");
+    outfile1 << setprecision(15);
+    outfile1 << setprecision(15);
+
     int steps = int(time/u);
     double tot = 0.;
 
@@ -101,22 +107,17 @@ void RK4integrator(double u, double time, nbody sim){
         
         auto start = high_resolution_clock::now();
 
-        double scale = time_step_scale(sim, 0, 1);
+        double scale = time_step_scale(sim, 1., 1.);
         double h = scale * u;
         sim = RK4N_step(h, sim);       
         
 
         for(int i=0; i<sim.bodies(); i++){
-            if (sim.r(i).norm() > 5){
-                stop = true;
+            outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
             }
-                outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
-            }
-            outfile1 << '\n';
-            if (stop){
-                break;
-            }
-        
+
+        outfile1 << '\n';
+                
         double E = Energy(sim);
         outfile2 << E << '\n';
         
