@@ -57,10 +57,8 @@ nbody RK4N_step(double h, nbody sim){
         sim2.swap_r(i, lx2);
         sim2.swap_v(i, lv2);
         
-        Vec ux2 = sim4.r(i) + 1./6. * 2 * kx2;
-        Vec uv2 = sim4.v(i) + 1./6. * 2 * kv2;
-        sim4.swap_r(i, ux2 );
-        sim4.swap_v(i, uv2);
+        sim4.swap_r(i, sim4.r(i) + 1./6. * 2 * kx2);
+        sim4.swap_v(i, sim4.v(i) + 1./6. * 2 * kv2);
         }
     
     for (int i=0; i < sim.bodies(); i++){
