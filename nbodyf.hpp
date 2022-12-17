@@ -64,7 +64,7 @@ class nbody{
     vector<double> _mass;
     vector<Vec> _pos;
     vector<Vec> _vel;
-    
+    vector<Vec> _a;
 
     public:
 
@@ -76,6 +76,7 @@ class nbody{
     double m(int l) const{return _mass[l];};
     Vec r(int w) const{return _pos[w];};
     Vec v(int q) const{return _vel[q];};
+    Vec a(int z) const{return _a[z];}
 
     // methods om de lijsten op te vullen:
     void add_mass(double massa){
@@ -90,6 +91,10 @@ class nbody{
         _vel.push_back(v);
     };
 
+    void add_a(Vec a){
+        _a.push_back(a);
+    }
+
     vector<Vec> pos() const{return _pos;};
     //methods om een element in een lijst te vervangen, input: (positie in de lijst, nieuwe waarde)
     void swap_m(int k, double m){
@@ -102,6 +107,10 @@ class nbody{
 
     void swap_v(int f, Vec v){
         _vel[f] = v;
+    }
+
+    void swap_a(int j, Vec a){
+        _a[j] = a;
     }
 
 };
@@ -179,7 +188,7 @@ double Energy(nbody sim){
         Vec ri = sim.r(i);
         double mi=sim.m(i);
         Vec vi= sim.v(i);
-        E+=mi*vi.norm2()/2;
+        E+=mi*vi.norm2()/2.;
 
         for  (int j =0; j<sim.bodies(); ++j){
             Vec rj = sim.r(j);
@@ -187,7 +196,7 @@ double Energy(nbody sim){
             Vec afst= ri-rj;
 
             if (i!=j){
-                E-= 1/2*G*mi*mj/afst.norm();
+                E-= 1./2.*G*mi*mj/afst.norm();
                 }
             }
     }
@@ -226,8 +235,9 @@ nbody init_sim(string file){
 
         ++l;
         };
-
+    
     sim.set_N(N);
+
     initialNfile.close();
     return sim;
 }
