@@ -122,28 +122,33 @@ double G=1;
 counter drivercount;
 
 
-double time_step_scale(nbody sim, int i, double schaal){
+// s = r / scale(normally =1AU) => h'=f(s)*h with f(s)= s^power , we vary the power to give different time_schemes
+double time_step_scale(nbody sim,  double scale, double power){
     vector<double> diff;
 
-    for (int j = 0; j < sim.bodies(); j++){
-        if (j != i){
-            Vec d = sim.r(i) - sim.r(j);
+    for (int i = 0; i < sim.bodies(); i++){
+        for (int j = 0; j < sim.bodies(); j++){
 
-            diff.push_back(d.norm());
-        }
-        else { continue;}
+            if (j != i){
+                Vec d = sim.r(i) - sim.r(j);
+                diff.push_back(d.norm());
+            }
+
+            else { continue;}
         
+        }
     }
     
     double min = diff[0];
     
-    for (i = 0; i < sim.bodies() - 1; i++){
+    for (int i = 0; i < diff.size(); i++){
+
         if(diff[i] < min){
             min = diff[i];
         }
     }
     
-    return min / schaal * 0.1;
+    return pow(min / scale, power);
 }
 
 void print(Vec a)
