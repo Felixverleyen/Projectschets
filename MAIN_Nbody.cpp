@@ -7,8 +7,10 @@
 #include <array>
 #include <string>
 #include <string.h>
+#include <chrono>
 #include "nbodyf.hpp"
 using namespace std;
+using namespace std::chrono;
 
 
 //double G=1;
@@ -93,8 +95,11 @@ void RK4integrator(double u, double time, nbody sim){
     ofstream outfile2("RK4N_E.txt");
     bool stop = false;
     int steps = int(time/u);
+    double tot = 0.;
 
     for (int t=0; t < steps; t++){
+        
+        auto start = high_resolution_clock::now();
 
         double scale = time_step_scale(sim, 0, 1);
         double h = scale * u;
@@ -115,11 +120,21 @@ void RK4integrator(double u, double time, nbody sim){
         double E = Energy(sim);
         outfile2 << E << '\n';
         
+        auto stop = high_resolution_clock::now();
+
+        auto duration = duration_cast<microseconds>(stop - start); 
+        tot += duration.count();
+        
         }
     outfile1.close();
     outfile2.close();
+    
+    double meanduration = tot / steps;
+    cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
+    outfile3 << sim.bodies() << ' ' << meanduration << '\n';
+    
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
     drivercount.reset();}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,23 +163,37 @@ void verlet(double h, double time, nbody sim) {
     outfile1 << setprecision(15);
     outfile2 << setprecision(15); 
     int steps = int(time / h);
+    double tot =0.;
     
     for (double t=0; t<steps; t++) {
+        
+        auto start = high_resolution_clock::now();
+        
         nbody sim_half = verlet_halfstep(h, sim);
         sim = verlet_step(h, sim, sim_half);
         for(int i=0; i<sim.bodies(); i++){
             outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
         }
+        
         outfile1 << '\n';
         double E = Energy(sim);
         outfile2 << E << '\n';
+        
+        auto stop = high_resolution_clock::now();
+
+        auto duration = duration_cast<microseconds>(stop - start); 
+        tot += duration.count();
     }
 
     outfile1.close();
     outfile2.close();
+    
+    double meanduration = tot / steps;
+    cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
+    outfile3 << sim.bodies() << ' ' << meanduration << '\n';
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
     drivercount.reset();
 }
 
@@ -201,8 +230,12 @@ void FR(double h, double time, nbody sim){
     outfile1 << setprecision(15);
     outfile2 << setprecision(15); 
     int steps = int(time / h);
+    double tot = 0.;
     
     for (double t=0; t<steps; t++){
+        
+        auto start = high_resolution_clock::now();
+        
         sim = FR_step(h, sim);
         for(int i=0; i<sim.bodies(); i++){
             outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -210,13 +243,21 @@ void FR(double h, double time, nbody sim){
         outfile1 << '\n';
         double E = Energy(sim);
         outfile2 << E << '\n';
+        
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        tot += duration.count();
     }
 
     outfile1.close();
     outfile2.close();
+    
+    double meanduration = tot / steps;
+    cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
+    outfile3 << sim.bodies() << ' ' << meanduration << '\n';
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
     drivercount.reset();
 }
         
@@ -266,6 +307,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     outfile2 << setprecision(15);
     int steps = int(time / h);
     double E = Energy(sim);
+    double tot = 0.;
 
     array<nbody,4> sim_list;
     sim_list[0] = sim;
@@ -282,6 +324,9 @@ void AB(double h, double time, nbody sim, int inputorder){
 
     if(inputorder==1){
         for (int i=0; i<steps; i++){
+            
+            auto start = high_resolution_clock::now();
+            
             sim = AB_1step(h, sim, sim_list[0]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -290,11 +335,18 @@ void AB(double h, double time, nbody sim, int inputorder){
             E = Energy(sim);
             outfile2 << E << '\n';
             sim_list[0] = sim;
+            
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            tot += duration.count();
         }
     }
 
     if(inputorder==2){
         for (int i=0; i<steps; i++){
+            
+            auto start = high_resolution_clock::now();
+            
             sim = AB_2step(h, sim, sim_list[0], sim_list[1]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -304,11 +356,18 @@ void AB(double h, double time, nbody sim, int inputorder){
             outfile2 << E << '\n';
             sim_list[0] = sim_list[1];
             sim_list[1] = sim;
+            
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            tot += duration.count();
         }
     }
 
     if(inputorder==3){
         for (int i=0; i<steps; i++){
+            
+            auto start = high_resolution_clock::now();
+
             sim = AB_3step(h, sim, sim_list[0], sim_list[1], sim_list[2]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -319,11 +378,18 @@ void AB(double h, double time, nbody sim, int inputorder){
             sim_list[0] = sim_list[1];
             sim_list[1] = sim_list[2];
             sim_list[2] = sim;
+            
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            tot += duration.count();
         }
     }
 
     if(inputorder==4){
         for (int i=0; i<steps; i++){
+            
+            auto start = high_resolution_clock::now();
+            
             sim = AB_4step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
             for(int i=0; i<sim.bodies(); i++){
                 outfile1 << sim.r(i).x() << ' ' << sim.r(i).y() << ' ' << sim.r(i).z() << ' '; 
@@ -335,13 +401,21 @@ void AB(double h, double time, nbody sim, int inputorder){
             sim_list[1] = sim_list[2];
             sim_list[2] = sim_list[3];
             sim_list[3] = sim;
+            
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            tot += duration.count();
         }
     }
     outfile1.close();
     outfile2.close();
+    
+    double meanduration = tot / steps;
+    cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
+    outfile3 << sim.bodies() << ' ' << meanduration << '\n';
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
     drivercount.reset();
 }
 
@@ -363,6 +437,7 @@ void AM(double h, double time, nbody sim){
     outfile1 << setprecision(15);
     outfile2 << setprecision(15);
     int steps = int(time / h);
+    double tot = 0.;
 
     //We determine the first 4 positions with the Runge_Kutta 4 method
     array<nbody,4> sim_list;
@@ -382,6 +457,9 @@ void AM(double h, double time, nbody sim){
     //We then use the Adams-Moulton method to correct this prediction 
 
     for (int i=0; i<steps; i++){
+        
+        auto start = high_resolution_clock::now();
+        
         sim = AB_4step(h, sim, sim_list[0], sim_list[1], sim_list[2], sim_list[3]);
         sim = AM_step(h, sim, sim_list[1], sim_list[2], sim_list[3]);
         for(int i=0; i<sim.bodies(); i++){
@@ -395,12 +473,20 @@ void AM(double h, double time, nbody sim){
         sim_list[1]=sim_list[2];
         sim_list[2]=sim_list[3];
         sim_list[3]=sim;
+        
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        tot += duration.count();
     }
     outfile1.close();
     outfile2.close();
+    
+    double meanduration = tot / (steps-4);
+    cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
+    outfile3 << sim.bodies() << ' ' << meanduration << '\n';
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
     drivercount.reset();
     
 }
