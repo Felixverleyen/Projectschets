@@ -88,6 +88,7 @@ nbody init_sim(string file){
 
 // we choose as an adaptive time scheme a function that changes h according to the minimum distance between 2 bodies
 // s = r / scale(for example = 1 AU) => h'=f(s)*h with f(s)= s^power (=> f(1)=1), we can vary the power to give different adaptive schemes
+// As a power function rises fast for f(s) > 1 we choose the maximum of f(s)=10 and constant for any value of s that gives s^power > 10
 
 double time_step_scale(nbody sim,  double scale, double power){
     //first the minimum distance between any 2 bodies is calculated
@@ -118,7 +119,9 @@ double time_step_scale(nbody sim,  double scale, double power){
     }
     
     //last step returns f(s)
-    return pow(min / scale, power);
+    double value = pow(min / scale, power);
+    if(value < 10) {return value;}
+    else {return 10;};
 }
 
 
