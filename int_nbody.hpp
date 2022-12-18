@@ -351,7 +351,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     double E = Energy(sim);
     double tot = 0.;
 
-    for (int i = 0; i < sim.bodies(); i++){
+    for (int i = 0; i < sim.bodies(); i++){     //here the accelerations have to be added to the nbody datatype
         sim.add_a(a(i, sim));
     }
 
