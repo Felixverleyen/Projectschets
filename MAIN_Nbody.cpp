@@ -126,10 +126,11 @@ void RK4integrator(double u, double time, nbody sim){
     outfile2.close();
     
     double meanduration = tot / steps;
+    cout << "Runge-Kutta 4: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
     
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n' << endl;
     drivercount.reset();}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -190,10 +191,11 @@ void verlet(double h, double time, nbody sim) {
     outfile2.close();
     
     double meanduration = tot / steps;
+    cout << "Verlet: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n' << endl;
     drivercount.reset();
 }
 
@@ -267,10 +269,11 @@ void FR(double h, double time, nbody sim){
     outfile2.close();
     
     double meanduration = tot / steps;
+    cout << "Forest-Ruth: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n' << endl;
     drivercount.reset();
 }
         
@@ -449,10 +452,11 @@ void AB(double h, double time, nbody sim, int inputorder){
     outfile2.close();
     
     double meanduration = tot / steps;
+    cout << "Adams-Bashforth: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n' << endl;
     drivercount.reset();
 }
 
@@ -537,10 +541,11 @@ void AM(double h, double time, nbody sim){
     outfile2.close();
     
     double meanduration = tot / (steps-4);
+    cout << "Adams-Moulton: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
-    cout << "The number of driver function evaluations is: " << averaged_count << '\n';
+    cout << "The number of driver function evaluations is: " << averaged_count << '\n' << endl;
     drivercount.reset();
     
 }
