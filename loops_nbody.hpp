@@ -12,11 +12,12 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///special case functions:
+///special functions for looping over certain parameters:
 
 // function for looping over different h and writing the final relative energy error to a file
+
 void hloop(double h , double time, nbody sim){
-    ofstream outfile("Adams-BashforthE(h).txt");
+    ofstream outfile("Adams-BashforthE(h).txt");    //writingfile has name [integrator]E(h).txt
     outfile << setprecision(15);
     ofstream outfile2("Adams-MoultonE(h).txt");
     outfile2 << setprecision(15);
@@ -27,16 +28,21 @@ void hloop(double h , double time, nbody sim){
     ofstream outfile5("VerletE(h).txt");
     outfile5 << setprecision(15);
 
-    for (int i=0; i<4; i++){
+    //We will loop over i with h changing as h_i = 10e-i * h
+    for (int i=0; i<2; i++){
         
-        double u = pow(10, -i) * h;
+        double u = pow(10, -i) * h; // h_i = 10e-i * h
         int steps = time / u;
 
+        //simulate for h_i
         RK4integrator(u, time, sim, false, 1., 1.);
         verlet(u, time, sim);
         FR(u, time, sim);
         AM(u, time, sim);
         AB(u, time, sim, 4);
+
+        //now for h_i the energies been written to the [integrator]E.txt files, we need the first (E_0) and last (E_f) to calculate...
+        //... the relative energy error. this is done for each integrator in the same way:
 
         string En;
         ifstream E("Adams-BashforthE.txt");
@@ -49,7 +55,7 @@ void hloop(double h , double time, nbody sim){
                 E0 = stod(En);
             };
 
-            if (l==steps-2){
+            if (l==steps-1){
                 Ef = stod(En);
             };
             ++l;
@@ -59,7 +65,7 @@ void hloop(double h , double time, nbody sim){
         E.close();
 
         ifstream E2("Adams-MoultonE.txt");
-        //string En2;
+
         int l2 = 0;
         double E02;
         double Ef2;
@@ -79,7 +85,7 @@ void hloop(double h , double time, nbody sim){
         E2.close();
 
         ifstream E3("FRE.txt");
-        //string En3;
+
         int l3 = 0;
         double E03;
         double Ef3;
@@ -88,7 +94,7 @@ void hloop(double h , double time, nbody sim){
                 E03 = stod(En);
             };
 
-            if (l3==steps-1){
+            if (l3==steps-2){
                 Ef3 = stod(En);
             };
             ++l3;
@@ -98,7 +104,7 @@ void hloop(double h , double time, nbody sim){
         E3.close();
 
         ifstream E4("RK4NE.txt");
-        //string En4;
+        
         int l4 = 0;
         double E04;
         double Ef4;
@@ -137,11 +143,19 @@ void hloop(double h , double time, nbody sim){
 
 
 // function for looping over different parameters of the adaptive timestep scheme and writing the final relative energy error to a file
+// We will change the power of the adaptive scheme from 1 to 3 in steps of 0.25
 
 void adapt_loop(double h, double time, double scale, nbody sim){
+    //initialize file; output is 2 columns, column 1 = rel. energy error at indicated time, column 2 = power in the time adaptive scheme
     ofstream outfile("RK4N_adapt_loop_E.txt");
     outfile << setprecision(15);
 
+    //Different powers in the adaptive scheme causes that the simulations will reach the same physical time in a different amount... 
+    //... of steps. As we want to compare energies at the same physical time we first look how far the simulation with the highest...
+    //... power reaches in pysical time (higher power means more smaller steps). We then find the energy of the other simulations...
+    //... at that time.
+
+    // for power = 3:
     RK4integrator(h, time, sim, true, 1., 3.);
     double maxt;
     int w = 0;
@@ -151,14 +165,14 @@ void adapt_loop(double h, double time, double scale, nbody sim){
     fin.open(filename);
     string tn;
 
-    while(getline(fin, tn)){
+    while(getline(fin, tn)){        //this loop makes the last value in the file equal to maxt and gives the length of the file w
         maxt = stod(tn);
         ++w;
     }
 
     fin.close();
       
-        
+    // we calculate the relative energy error at maxt 
     string En;
     ifstream E("RK4NE.txt");
     
@@ -177,34 +191,40 @@ void adapt_loop(double h, double time, double scale, nbody sim){
         ++l;
             
     }  
-    outfile << abs((Ef-E0)/E0) << ' ' << 3. << '\n';
+    outfile << abs((Ef-E0)/E0) << ' ' << 3. << ' ' << maxt << '\n'; //in the first line of the file we also specify the physical time...
+                                                                    //... we consider when comparing the energies
     E.close();         
     
-    double min = maxt - 1e-5;
-    double max = maxt + 1e-5;
+    // Now for other powers
+    double min = maxt - 1e-5;       //we must make an interval because the steps in physical time don't correspond perfectly for...
+    double max = maxt + 1e-5;       //... different simulations with different powers in the adaptive scheme (see further)
 
     for (int i = 1; i < 9; i++){
         double power = (12-i) / 4.;
         RK4integrator(h, time, sim, true, 1., power);
+
         string tn_;
         ifstream t2("time.txt");
         int u = 0;
-        while (getline(t2, tn_)){
+
+        while (getline(t2, tn_)){   //this loop finds how many steps u the simulation needs to reach maxt
             ++u;
             double tn_d = stod(tn_);
-            if (min < tn_d &&  tn_d < max ){
-                cout << tn_d;
+
+            if (min < tn_d &&  tn_d < max ){ //the considered interval
                 break;
             };
         };
 
+        //the energy at step u will be at physical time t
         string En;
-        ifstream E("RK4NE.txt");
+        ifstream E("RK4NE.txt"); 
     
         int l = 0;
         double E0;
         double Ef;
-        while (getline(E, En)){
+        //we calculate the relative energy error
+        while (getline(E, En)){     
             if (l==0){
                 E0 = stod(En);
             };
