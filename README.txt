@@ -70,7 +70,7 @@ LOOPS_Nbody.hpp:
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        adapt_looph, time, scale, sim): for varying parameters of the adaptive scheme
+        adapt_loop(h, time, scale, sim): for varying parameters of the adaptive scheme
 
 
 
