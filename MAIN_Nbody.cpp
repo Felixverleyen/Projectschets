@@ -452,7 +452,7 @@ void AB(double h, double time, nbody sim, int inputorder){
     outfile2.close();
     
     double meanduration = tot / steps;
-    cout << "Adams-Bashforth: " << endl;
+    cout << "Adams-Bashforth " << inputorder << ": " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
@@ -541,7 +541,7 @@ void AM(double h, double time, nbody sim){
     outfile2.close();
     
     double meanduration = tot / (steps-4);
-    cout << "Adams-Moulton: " << endl;
+    cout << "Adams-Moulton 4: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
 
     double averaged_count = drivercount.order(sim.bodies(), steps);
