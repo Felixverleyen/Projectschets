@@ -57,7 +57,7 @@ nbody init_sim(string file){
     fstream initialNfile(file);
 
     while (getline(initialNfile, initial_i)){
-        if(l>8){
+        if(l>7){
             double m = stod(initial_i.substr(2,4));
 
             double rx = stod(initial_i.substr(7, 4));

@@ -7,7 +7,7 @@
 #include <array>
 #include <string>
 #include <string.h>
-#include "int_nbody.hpp"
+#include "loops_nbody.hpp"
 using namespace std;
 
 
@@ -15,7 +15,7 @@ using namespace std;
 int main(){
     string file = "Initial_cond.txt";
     nbody sim = init_sim(file);
-    double h = 1e-4;
+    double h = 1e-5;
     double time = 0.01;
     bool adapt = false;
     //see func_nbody.hpp for the source-code of the integrators
