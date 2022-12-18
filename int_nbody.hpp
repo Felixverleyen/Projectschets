@@ -98,12 +98,12 @@ void RK4integrator(double u, double time, nbody sim, bool adapt, double scale, d
     
     double phystime = 0.;
     int steps = int(time/u);
-    double tot = 0.;
+    double tot = 0.; // variable to take total execution time
 
 
     for (int t=0; t < steps; t++){
         
-        auto start = high_resolution_clock::now();
+        auto start = high_resolution_clock::now(); // take time at start of integration time step
 
 
         if (adapt){
@@ -125,16 +125,16 @@ void RK4integrator(double u, double time, nbody sim, bool adapt, double scale, d
         double E = Energy(sim);
         outfile2 << E << '\n';
 
-        auto stop = high_resolution_clock::now();
+        auto stop = high_resolution_clock::now(); // take time at end of integration time step
 
         auto duration = duration_cast<microseconds>(stop - start); 
-        tot += duration.count();
+        tot += duration.count(); // count total time
         
         }
     outfile1.close();
     outfile2.close();
     
-    double meanduration = tot / steps;
+    double meanduration = tot / steps; // mean execution time per integration time step
 
     cout << "Runge-Kutta 4: " << endl;
     cout << "For N =" << ' ' << sim.bodies() << ' ' << "bodies: The mean execution time per integration time step is" << ' ' << meanduration << ' ' << "microseconds." << endl;
