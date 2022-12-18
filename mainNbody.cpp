@@ -7,7 +7,7 @@
 #include <array>
 #include <string>
 #include <string.h>
-#include "int_nbody.hpp"
+#include "loops_nbody.hpp"
 using namespace std;
 
 
@@ -21,12 +21,12 @@ int main(){
     //see func_nbody.hpp for the source-code of the integrators
 
     //RK4integrator(h, time, sim, adapt, 1., 2.);
-    //verlet(h, time, sim);
+    verlet(h, time, sim);
     //FR(h, time, sim);
     //AM(h, time, sim);
     //AB(h, time, sim, 2);
 
-    bool hlooping = true;
+    bool hlooping = false;
     bool vary_adapt_looping = false;
 
     if (hlooping){
