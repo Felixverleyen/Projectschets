@@ -3,8 +3,8 @@
 For physical parameter u: u'= u/u_0 with u' the dimensionless simulation parameter.
 m_0 = earthmass(= 5.9722e24 kg = 1/33e4 M_zon), r_0 = AU(= 1.496e11 m), v_0 = 51.6m/s, t_0 = 2.9722e9 s
 With this choice the acceleration equations becomes a'=-m'/r'^2.
-/
+/note that the input numbers must be exactly 4 characters long and a space between them (example of earth around the sun below)
 /Conditions:
 #|mass|posx|posy|posz|velx|vely|velz
-1 1.00 1.00 0.00 0.00 0.00 400. 0.00
+1 1.00 1.00 0.00 0.00 0.00 581. 0.00
 2 33e4 0.00 0.00 0.00 0.00 0.00 0.00
