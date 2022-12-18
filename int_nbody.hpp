@@ -19,10 +19,10 @@ using namespace std::chrono;
 //Runge-Kutta
 nbody RK4N_step(double h, nbody sim){
 
-    nbody sim1 = sim;
-    nbody sim2 = sim;
-    nbody sim3 = sim;
-    nbody sim4 = sim;
+    nbody sim1 = sim;  //used as input for driverfunction in eq. 3.36 of the syllabus
+    nbody sim2 = sim;  //used as input for driverfunction in eq. 3.37 of the syllabus
+    nbody sim3 = sim;  //used as input for driverfunction in eq. 3.38 of the syllabus
+    nbody sim4 = sim;  //after each calculation of k_i a corresponding term of eq. 3.39 is added. at the end it is sim(t_(n+1))
 
     for (int i=0; i < sim.bodies(); i++){
         
@@ -34,8 +34,7 @@ nbody RK4N_step(double h, nbody sim){
         Vec lv1 = sim.v(i) + 0.5 * kv1;
         sim1.swap_r(i, lx1);
         sim1.swap_v(i, lv1);
-        
-        
+              
         sim4.swap_r(i, sim.r(i) + 1./6. * kx1);
         sim4.swap_v(i, sim.v(i) + 1./6. * kv1);
         }
@@ -51,11 +50,9 @@ nbody RK4N_step(double h, nbody sim){
         Vec lv2 = sim.v(i) + 0.5 * kv2;
         sim2.swap_r(i, lx2);
         sim2.swap_v(i, lv2);
-        
-        Vec ux2 = sim4.r(i) + 1./6. * 2 * kx2;
-        Vec uv2 = sim4.v(i) + 1./6. * 2 * kv2;
-        sim4.swap_r(i, ux2 );
-        sim4.swap_v(i, uv2);
+
+        sim4.swap_r(i, sim4.r(i) + 1./6. * 2 * kx2);
+        sim4.swap_v(i, sim4.v(i) + 1./6. * 2 * kv2);
         }
     
     for (int i=0; i < sim.bodies(); i++){
@@ -68,8 +65,7 @@ nbody RK4N_step(double h, nbody sim){
         Vec lv3 = sim.v(i) + kv3;
         sim3.swap_r(i, lx3);
         sim3.swap_v(i, lv3);
-        
-        
+              
         sim4.swap_r(i, sim4.r(i) + 1./6. * 2 * kx3);
         sim4.swap_v(i, sim4.v(i) + 1./6. * 2 * kv3);
         }
@@ -83,6 +79,7 @@ nbody RK4N_step(double h, nbody sim){
         sim4.swap_r(i, sim4.r(i) + 1./6. * kx4);
         sim4.swap_v(i, sim4.v(i) + 1./6. * kv4);
         }
+
     sim = sim4;
     return sim;
     };
@@ -91,14 +88,14 @@ void RK4integrator(double u, double time, nbody sim, bool adapt, double scale, d
     
     ofstream outfile1("RK4N.txt");
     ofstream outfile2("RK4NE.txt");
-    ofstream outfile3("time.txt");
+    ofstream outfile3("time.txt");      //needed in adapt_loop function see loops_nbody.hpp
     outfile1 << setprecision(15);
     outfile2 << setprecision(15);
     outfile3 << setprecision(15);
     
     double phystime = 0.;
     int steps = int(time/u);
-    double tot = 0.; // variable to take total execution time
+    double tot = 0.;
 
 
     for (int t=0; t < steps; t++){
@@ -106,11 +103,11 @@ void RK4integrator(double u, double time, nbody sim, bool adapt, double scale, d
         auto start = high_resolution_clock::now(); // take time at start of integration time step
 
 
-        if (adapt){
+        if (adapt){ // change time step if adaptive scheme is used
             double scale_ = time_step_scale(sim, scale, power);
             double h = scale_ * u;
             sim = RK4N_step(h, sim);
-            phystime += h;
+            phystime += h;          //keeps track of physical time
             outfile3 << phystime << '\n';
         }
         else {sim = RK4N_step(u, sim);}     
@@ -125,7 +122,7 @@ void RK4integrator(double u, double time, nbody sim, bool adapt, double scale, d
         double E = Energy(sim);
         outfile2 << E << '\n';
 
-        auto stop = high_resolution_clock::now(); // take time at end of integration time step
+        auto stop = high_resolution_clock::now();  // take time at end of integration time step
 
         auto duration = duration_cast<microseconds>(stop - start); 
         tot += duration.count(); // count total time
