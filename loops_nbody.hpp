@@ -29,7 +29,7 @@ void hloop(double h , double time, nbody sim){
     outfile5 << setprecision(15);
 
     //We will loop over i with h changing as h_i = 10e-i * h
-    for (int i=0; i<2; i++){
+    for (int i=0; i<5; i++){
         
         double u = pow(10, -i) * h; // h_i = 10e-i * h
         int steps = time / u;
