@@ -127,9 +127,13 @@ class counter{
     int getcount() {return count;};
     void reset() {count = 0;};
 
-    double order(int N, int steps) { double averaged_count = (1.* count) / (1. * steps * N);
+    
+    double order(int N, int steps) {            //gives the number of driver function evaluations of an integrator
+    
+    double averaged_count = (1.* count) / (1. * steps * N); 
     return averaged_count;};
-};
+
+}; 
 
 double G=1; 
 counter drivercount;
