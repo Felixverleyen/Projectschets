@@ -45,25 +45,25 @@ class_nbody.hpp:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        nbody: datatype that holds the masses, positions, velocities and (id needed) accelarations of all bodies
+        nbody: datatype that holds the masses, positions, velocities and (if needed) accelarations of all bodies
                 at a specific time. Only the AB and AM methods need to hold the accelarations.
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        counter: dataype that can be used to count the number of driverfunction evaltuations for the integrater 
+        counter: dataype that can be used to count the number of driverfunction evaluations for the integrater 
                  that is used.
 
             Each time that the accelaration is calculated for a body (calling of function a(), see FUNC_Nbody) 
             the counter will go +1. The driver function is an N-dimensional array (N bodies) of 3-Vectors a(i)
             the counter goes up for every a(i) so we should divide by N to get the correct number of driver-
-            function evaluations (independent of bodies). It should also be divided by the amount of time steps
-            to give the average evaluations per unit of simulated time. The counter is reset after integration 
-            with any of the intagrators.
+            function evaluations (it should be independent of #bodies=N). It should also be divided by the amount
+            of time steps to give the average evaluations per unit of simulated time. The counter is reset after 
+            integration with any of the intagrators.
 
     
 
 loops_nbody.hpp:
-    This headerfile is not needed for the operation of our simulations. We have included it here for completeness
+    This headerfile is not needed for the operation of our simulations. We have included it here for completeness.
     It generates the proper output for when we want to see how the relative energy error evolves with varying 
     time step (for fixed h) and generating output for varying parameters of the adaptive scheme.
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,15 +80,15 @@ func_nbody.hpp:
     This headerfile contains some assistance functions:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        a(i, sim): funtion to calculate the accelartion of one body due to the N-1 other bodies
+        a(i, sim): function to calculate the accelaration of one body due to the N-1 other bodies
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Energy(sim): function to calculate the energie of the system at a given time
+        Energy(sim): function to calculate the energy of the system at a given time
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        time_step_scale(sim, i, schaal): adaptive time step
+        time_step_scale(sim, i, schaal): adaptive time step (see source code for explanation of our method)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,7 +105,7 @@ MAIN_Nbody.cpp:
         h: the step size
         RK4/Verlet/FR/AB/AM: the integrator one wants to use
     
-    Here we can also initialize the loops that provide output for varying h and varying parameters of the adaptivve time sheme
+    Here we can also initialize the loops that provide output for varying h and varying parameters of the adaptive time sheme
 
 initial_cond.txt:
     File that contains initial conditions of N-body system. Also the used simulation units are explained
