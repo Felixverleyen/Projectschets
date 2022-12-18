@@ -17,8 +17,8 @@ int main(){
     nbody sim = init_sim(file);         //reads "Initial_cond.txt" and initializes sim accordingly (see func_nbody.hpp)
                                         //for class nbody see class_nbody.hpp
                                         
-    double h = 1e-4;                    //timestep
-    double time = 0.1;                  //integration time
+    double h = 1e-5;                    //timestep
+    double time = 1;                  //integration time
 
     bool adapt = false;     //=true if you want an adaptive time step scheme
 
