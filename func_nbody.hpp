@@ -47,7 +47,7 @@ double Energy(nbody sim){
             }
     }
 
-     return E*pow(v0, 2);}
+     return E;}
 
 nbody init_sim(string file){
     string initial_i;
@@ -86,11 +86,14 @@ nbody init_sim(string file){
     return sim;
 }
 
+// we choose as an adaptive time scheme a function that changes h according to the minimum distance between 2 bodies
+// s = r / scale(for example = 1 AU) => h'=f(s)*h with f(s)= s^power (=> f(1)=1), we can vary the power to give different adaptive schemes
 
-// s = r / scale(normally =1AU) => h'=f(s)*h with f(s)= s^power , we vary the power to give different time_schemes
 double time_step_scale(nbody sim,  double scale, double power){
-    vector<double> diff;
+    //first the minimum distance between any 2 bodies is calculated
 
+    vector<double> diff;
+    //put all distances between 2 bodies in a vector
     for (int i = 0; i < sim.bodies(); i++){
         for (int j = 0; j < sim.bodies(); j++){
 
@@ -104,6 +107,7 @@ double time_step_scale(nbody sim,  double scale, double power){
         }
     }
     
+    //find the minimum in the vector
     double min = diff[0];
     
     for (int i = 0; i < diff.size(); i++){
@@ -113,7 +117,10 @@ double time_step_scale(nbody sim,  double scale, double power){
         }
     }
     
+    //last step returns f(s)
     return pow(min / scale, power);
 }
+
+
 
 
