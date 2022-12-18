@@ -8,12 +8,7 @@
 #include <string>
 using namespace std;
 
-
-double m0 = 5.9722e24;
-double r0 = 1.496e11;
-double v0 = 51.6;
-double t0 = 2.9722e9;
-
+//3D-Vector class:
 class Vec{
     double _x;
     double _y;
@@ -64,6 +59,7 @@ Vec operator/(Vec a, double s) { return a /= s; }
 Vec operator+(Vec a, Vec b) {return a+=b;}
 Vec operator-(Vec a, Vec b) { return a -= b; }
 
+//A class that holds all information of the simulation at time t_n (N masses, N positions, N velocities and if needed N accelarations)
 class nbody{
 
     int N;
@@ -78,13 +74,13 @@ class nbody{
     void set_N(int n) {N=n;};
     int bodies() const{return N;};
 
-    //deze methods geven de waarde van een element in de lijst
+    //these methods give the values corresponding to specified bodies
     double m(int l) const{return _mass[l];};
     Vec r(int w) const{return _pos[w];};
     Vec v(int q) const{return _vel[q];};
     Vec a(int z) const{return _a[z];}
 
-    // methods om de lijsten op te vullen:
+    //Methods to fill the lists when initializing the simulation (used in init_sim() function, see func_nbody)
     void add_mass(double massa){
         _mass.push_back(massa);
     };
@@ -102,7 +98,8 @@ class nbody{
     }
 
     vector<Vec> pos() const{return _pos;};
-    //methods om een element in een lijst te vervangen, input: (positie in de lijst, nieuwe waarde)
+
+    //methods to change a specific value in sim, input: (index of body, new value)
     void swap_m(int k, double m){
         _mass[k] = m;
     }
@@ -121,7 +118,7 @@ class nbody{
 
 };
 
-
+//class used to count the driverfunction evaluations
 class counter{
     int count = 0;
 
@@ -134,5 +131,5 @@ class counter{
     return averaged_count;};
 };
 
-double G=1;
+double G=1; 
 counter drivercount;
