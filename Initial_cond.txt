@@ -1,7 +1,0 @@
-//
-/units (we chose in such a way that the acceleration equations becomes a'=-m'/r'^2)
-mass: per earthmass(= 5.9722e24 kg = 1/330000 M_zon), length: per AE(= 1.496e11 m), snelheid: per 51.6m/s, tijd: per 2.9722e9 s
-//
-#|mass|posx|posy|posz|velx|vely|velz
-1 1.00 1.00 0.00 0.00 0.00 581. 0.00
-2 33e4 0.00 0.00 0.00 0.00 0.00 0.00 
