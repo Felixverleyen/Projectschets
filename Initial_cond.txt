@@ -6,5 +6,6 @@ With this choice the acceleration equations becomes a'=-m'/r'^2.
 /note that the input numbers must be exactly 4 characters long and a space between them (example of earth around the sun below)
 /Conditions:
 #|mass|posx|posy|posz|velx|vely|velz
-1 1.00 1.00 0.00 0.00 0.00 581. 0.00
-2 33e4 0.00 0.00 0.00 0.00 0.00 0.00
+1 2.00 0.80 0.20 0.00 000. 0.00 0.00
+2 2.00 -0.7 0.30 0.00 0.00 0.00 0.00
+3 1.00 0.10 -0.6 0.00 0.00 0.00 0.00 
